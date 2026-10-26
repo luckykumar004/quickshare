@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QuickShare — All in One</title>
+<style>
+:root{font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;color:#172033;background:#f3f6ff}
+*{box-sizing:border-box}body{margin:0;padding:24px;min-height:100vh;background:radial-gradient(circle at 10% 0,#e0eaff,transparent 35%),#f7f8fc}
+main{max-width:1050px;margin:auto}.top{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:22px}
+.brand{display:flex;align-items:center;gap:12px}.logo{background:linear-gradient(135deg,#087cf0,#7857f7);color:white;border-radius:16px;width:52px;height:52px;display:grid;place-items:center;font-size:26px;font-weight:900;box-shadow:0 8px 20px #3b70ef35}
+h1{margin:0;font-size:28px;letter-spacing:-.7px}.muted{color:#69758b}.pill{background:#e1f8ec;color:#087b4a;border-radius:999px;padding:9px 13px;font-weight:700;font-size:13px}
+.hero{border-radius:26px;padding:32px;color:white;background:linear-gradient(115deg,#0879e8,#4d6cf5 60%,#8a5cf6);box-shadow:0 16px 38px #4368dd25}
+.hero h2{font-size:clamp(28px,4vw,42px);margin:0 0 10px}.hero p{font-size:17px;line-height:1.5;margin:0;max-width:680px;color:#eff4ff}
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:22px}.mode{background:#ffffff1c;border:1px solid #ffffff45;border-radius:15px;padding:14px}.mode b{display:block;margin-bottom:5px}.mode span{font-size:13px;color:#f0f4ff}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}.card{background:white;border:1px solid #e6eaf3;border-radius:22px;padding:22px;box-shadow:0 10px 28px #24395c0a;min-width:0}.card h3{margin:0 0 8px;font-size:19px}.drop{margin-top:16px;border:2px dashed #c4d2ef;border-radius:17px;padding:26px 14px;text-align:center;background:#f8faff}.drop.drag{border-color:#2865ed;background:#edf3ff}.big{font-size:35px}.btn,button{display:inline-block;border:0;border-radius:11px;padding:11px 16px;background:#2463eb;color:white;font-weight:750;cursor:pointer;text-decoration:none;font-size:14px}.btn.secondary,button.secondary{background:#edf2ff;color:#2456c9}.btn.red{background:#e94f62}input[type=file]{display:none}input[type=text]{width:100%;padding:12px;border:1px solid #d8dfec;border-radius:10px;font:inherit;margin:8px 0 12px}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.status{margin-top:14px;padding:12px 14px;border-radius:12px;background:#f0f5ff;color:#354b79;font-size:14px;line-height:1.45;overflow-wrap:anywhere}.files{display:grid;gap:8px;margin-top:14px}.file{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px;border:1px solid #e8ecf4;border-radius:12px}.file strong{overflow-wrap:anywhere}.file small{display:block;color:#7b8597;margin-top:4px}.foot{text-align:center;color:#778197;font-size:12px;line-height:1.5;margin:20px}
+@media(max-width:760px){body{padding:13px}.grid{grid-template-columns:1fr}.modes{grid-template-columns:1fr}.hero{padding:23px}.card{padding:17px}.top{align-items:flex-start}}
+</style>
+</head>
+<body><main>
+<header class="top"><div class="brand"><div class="logo">↗</div><div><h1>QuickShare</h1><div class="muted">One simple place to share files</div></div></div><span class="pill" id="serverState">● Checking server…</span></header>
+<section class="hero"><h2>Transfer files. Your way.</h2><p>Use your local network for nearby devices, or create a private room to try a direct browser-to-browser transfer across the internet.</p>
+<div class="modes"><div class="mode"><b>🏠 Same Wi-Fi</b><span>Upload here; devices on this server can download.</span></div><div class="mode"><b>🌍 Internet room</b><span>Pair two devices with the same room code.</span></div><div class="mode"><b>⚡ Direct P2P</b><span>WebRTC data channel; connection depends on network/NAT.</span></div></div></section>
+<div class="grid">
+<section class="card"><h3>📤 Share on this server</h3><div class="muted">Files uploaded here are stored on the machine running QuickShare.</div>
+<div class="drop" id="drop"><div class="big">☁️</div><b>Drop files here</b><p class="muted">or choose files from this device</p><label class="btn" for="picker">Choose files</label><input id="picker" type="file" multiple></div>
+<div class="status" id="localStatus">Ready. Choose a file to upload.</div><div class="row" style="justify-content:space-between;margin-top:18px"><h3 style="margin:0">Shared files</h3><button class="secondary" id="refresh">Refresh</button></div><div class="files" id="files"><div class="muted">Loading…</div></div>
+</section>
+<section class="card"><h3>🌍 Internet / Direct P2P room</h3><p class="muted">Open this same site on both devices. Use the same room code. Keep the page open during transfer.</p>
+<label for="room">Room code</label><input id="room" type="text" maxlength="40" placeholder="e.g. blue-cat-482">
+<div class="row"><button id="connect">Connect room</button><button class="secondary" id="disconnect">Leave room</button></div>
+<div class="status" id="p2pStatus">Not connected to a room.</div>
+<div class="drop" id="p2pDrop" style="margin-top:14px"><div class="big">⚡</div><b>Send directly to the other device</b><p class="muted">Connect both devices with the same room code first.</p><label class="btn" for="p2pPicker">Choose file to send</label><input id="p2pPicker" type="file"></div>
+<div class="status" id="transferStatus">Direct transfer is idle.</div>
+<p class="muted" style="font-size:12px">Privacy note: room codes are not authentication. Use a random, hard-to-guess code and only share with people you trust. STUN-only connections may fail on restrictive networks; a TURN relay may be required.</p>
+</section></div>
+<p class="foot">QuickShare demo • Keep the server running. For public internet use, deploy over HTTPS and add authentication, rate limits, storage limits, and a TURN service before sharing sensitive files.</p>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const picker=$('picker'),drop=$('drop'),filesEl=$('files'),localStatus=$('localStatus');
+function size(n){if(n<1024)return n+' B';if(n<1048576)return(n/1024).toFixed(1)+' KB';if(n<1073741824)return(n/1048576).toFixed(1)+' MB';return(n/1073741824).toFixed(2)+' GB'}
+async function upload(list){for(const file of list){localStatus.textContent='Uploading '+file.name+'…';try{const r=await fetch('/api/upload',{method:'POST',headers:{'X-File-Name':encodeURIComponent(file.name)},body:file});if(!r.ok)throw new Error(await r.text());}catch(e){localStatus.textContent='Upload failed: '+file.name+'. '+e.message;return}}picker.value='';localStatus.textContent='Upload complete.';refreshFiles()}
+async function refreshFiles(){try{const r=await fetch('/api/files');if(!r.ok)throw Error('server unavailable');const items=await r.json();filesEl.replaceChildren();if(!items.length){filesEl.textContent='No files shared yet.';filesEl.className='files muted';return}filesEl.className='files';for(const f of items){const row=document.createElement('div');row.className='file';const info=document.createElement('div'),name=document.createElement('strong'),meta=document.createElement('small'),link=document.createElement('a');name.textContent=f.displayName;meta.textContent=size(f.size);info.append(name,meta);link.textContent='Download';link.className='btn';link.href=f.url;link.download=f.displayName;row.append(info,link);filesEl.append(row)}}catch{filesEl.textContent='Could not contact server.'}}
+$('refresh').onclick=refreshFiles;picker.onchange=()=>upload(picker.files);
+['dragenter','dragover'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.add('drag')}));['dragleave','drop'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.remove('drag')}));drop.addEventListener('drop',ev=>upload(ev.dataTransfer.files));
+fetch('/api/health').then(r=>r.ok?$('serverState').textContent='● Server online':Promise.reject()).catch(()=>$('serverState').textContent='● Server unavailable');refreshFiles();setInterval(refreshFiles,5000);
+
+// WebSocket signaling + WebRTC data channel. File is chunked so it need not be sent as one giant message.
+let ws=null,pc=null,dc=null,roomCode='',isInitiator=false,receivedMeta=null,receivedChunks=[],receivedBytes=0;
+const pstatus=$('p2pStatus'),tstatus=$('transferStatus');
+function say(s){pstatus.textContent=s}
+function sendSignal(data){if(ws&&ws.readyState===WebSocket.OPEN)ws.send(JSON.stringify({...data,room:roomCode}))}
+function makePC(){pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]});
+pc.onicecandidate=e=>{if(e.candidate)sendSignal({type:'candidate',candidate:e.candidate})};
+pc.onconnectionstatechange=()=>say('Peer connection: '+pc.connectionState);
+pc.ondatachannel=e=>setupDC(e.channel);
+return pc}
+function setupDC(channel){dc=channel;dc.binaryType='arraybuffer';dc.onopen=()=>{say('Direct peer connected. Ready to send files.');tstatus.textContent='Direct transfer ready.'};dc.onclose=()=>{tstatus.textContent='Direct channel closed.'};
+dc.onmessage=e=>{if(typeof e.data==='string'){let m;try{m=JSON.parse(e.data)}catch{return}if(m.kind==='file-start'){receivedMeta=m;receivedChunks=[];receivedBytes=0;tstatus.textContent='Receiving '+m.name+'…'}else if(m.kind==='file-end'&&receivedMeta){const blob=new Blob(receivedChunks,{type:receivedMeta.type||'application/octet-stream'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=receivedMeta.name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),60000);tstatus.textContent='Received '+receivedMeta.name+' ('+size(blob.size)+')';receivedMeta=null;receivedChunks=[]}}else{receivedChunks.push(e.data);receivedBytes+=e.data.byteLength||e.data.size||0;if(receivedMeta)tstatus.textContent='Receiving '+receivedMeta.name+'… '+size(receivedBytes)}}}
+async function connectRoom(){roomCode=$('room').value.trim();if(!roomCode){say('Enter a room code first.');return}if(ws)ws.close();if(pc)pc.close();pc=null;dc=null;isInitiator=false;say('Connecting to signaling server…');
+const proto=location.protocol==='https:'?'wss:':'ws:';ws=new WebSocket(proto+'//'+location.host+'/signal');
+ws.onopen=()=>ws.send(JSON.stringify({type:'join',room:roomCode}));
+ws.onmessage=async ev=>{let m;try{m=JSON.parse(ev.data)}catch{return}
+if(m.type==='joined'){isInitiator=!!m.initiator;say(isInitiator?'Room joined. Waiting for the other device…':'Room joined. Connecting to peer…');if(!isInitiator){makePC();pc.ondatachannel=e=>setupDC(e.channel);sendSignal({type:'ready'})}}
+if(m.type==='peer-ready'&&isInitiator){makePC();dc=pc.createDataChannel('quickshare',{ordered:true});setupDC(dc);const offer=await pc.createOffer();await pc.setLocalDescription(offer);sendSignal({type:'offer',sdp:pc.localDescription})}
+if(m.type==='offer'&&!isInitiator){if(!pc)makePC();await pc.setRemoteDescription(m.sdp);const answer=await pc.createAnswer();await pc.setLocalDescription(answer);sendSignal({type:'answer',sdp:pc.localDescription})}
+if(m.type==='answer'&&isInitiator&&pc)await pc.setRemoteDescription(m.sdp);
+if(m.type==='candidate'&&pc&&m.candidate){try{await pc.addIceCandidate(m.candidate)}catch{}}
+if(m.type==='peer-left')say('Other device left the room.');
+if(m.type==='error')say('Signaling error: '+m.message);
+};
+ws.onerror=()=>say('Could not connect. Server must be deployed/reachable and use HTTPS/WSS on public internet.');
+ws.onclose=()=>{if(pc&&pc.connectionState!=='connected')say('Signaling connection closed.');};
+}
+$('connect').onclick=connectRoom;$('disconnect').onclick=()=>{if(ws)ws.close();if(pc)pc.close();ws=pc=dc=null;roomCode='';say('Left room.');tstatus.textContent='Direct transfer idle.'};
+$('p2pPicker').onchange=async()=>{const file=$('p2pPicker').files[0];if(!file)return;if(!dc||dc.readyState!=='open'){tstatus.textContent='Connect both devices to the same room first.';return}
+if(file.size>500*1024*1024){tstatus.textContent='Demo limit: 500 MB per file.';return}
+dc.send(JSON.stringify({kind:'file-start',name:file.name,size:file.size,type:file.type}));const chunkSize=16*1024;let offset=0;while(offset<file.size){while(dc.bufferedAmount>4*1024*1024)await new Promise(r=>setTimeout(r,30));const buf=await file.slice(offset,offset+chunkSize).arrayBuffer();dc.send(buf);offset+=buf.byteLength;tstatus.textContent='Sending '+file.name+'… '+Math.round(offset/file.size*100)+'%'}dc.send(JSON.stringify({kind:'file-end'}));tstatus.textContent='Sent '+file.name;$('p2pPicker').value=''};
+</script></body></html>
