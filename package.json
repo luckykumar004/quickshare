@@ -1,9 +1,9 @@
 {
-  "name": "quickshare-all-in-one",
+  "name": "quickshare-ultra-premium",
   "version": "1.0.0",
   "private": true,
-  "description": "Local file sharing and WebRTC room transfer demo",
-  "main": "server.js",
-  "scripts": { "start": "node server.js" },
-  "dependencies": { "ws": "^8.18.0" }
+  "description": "Ultra Premium local network file sharing",
+  "scripts": {
+    "start": "node server.js"
+  }
 }
